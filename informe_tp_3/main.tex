@@ -51,7 +51,7 @@
     \\[1cm]
     \textsc{\Large Teoría de Algoritmos}\\           
     \textsc{\small Curso Echevarria}\\[0.4cm]    
-    { \huge \bfseries Trabajo Práctico 1 }\\[0.3cm]      
+    { \huge \bfseries Trabajo Práctico 3 }\\[0.3cm]      
     \rule{\textwidth}{0.4pt} \\[0.2cm] 
     {\large \today  \\[0.5cm]}                          
     \begin{minipage}{0.6\textwidth}
@@ -81,6 +81,129 @@
 \tableofcontents
 
 \newpage
+\section{{\uline{\textbf{\textit{Problema 2}}}}}
+
+\subsection{Supuestos}
+\begin{itemize}
+    \item El numero total de ofertas $n$ es conocido de antemano por el vendedor.
+    \item Las ofertas se presentan en un orden aleatorio y no pueden ser reordenadas.
+    \item Cada oferta es distinta, por lo tanto, existe una unica oferta máxima.
+    \item Una vez que se rechaza una oferta, no puede recuperarse ni reconsiderarse.
+    \item El vendedor puede comparar las ofertas vistas hasta el momento, pero no tiene información sobre las que vendran.
+    \item Se asume que $n$ es impar, lo cual permite simplificar el análisis probabilístico.
+\end{itemize}
+
+\subsection{Diseño}
+
+El algoritmo implementa una estrategia inspirada en el clásico problema del mejor candidato. Se divide en dos fases:
+
+\begin{enumerate}
+    \item \textbf{Fase de observación:} se descartan las primeras $r = \lfloor n/2 \rfloor$ ofertas, observando cuál es la mejor entre ellas.
+    \item \textbf{Fase de selección:} se acepta la primera oferta que supere a la mejor observada. Si ninguna lo hace, se acepta la última.
+\end{enumerate}
+
+Esta estrategia asegura una probabilidad de al menos $\frac{1}{4}$ de seleccionar la mejor oferta del conjunto, sin importar el valor de $n$ (siempre que sea impar y razonablemente grande).
+
+\subsubsection*{Estructuras de datos utilizadas}
+\begin{itemize}
+    \item \textbf{Lista de enteros:} contiene las $n$ ofertas en orden aleatorio.
+    \item \textbf{Variable entera \texttt{mejorObservada}:} guarda la mayor oferta observada durante la primera mitad del proceso.
+\end{itemize}
+
+\subsection{Pseudocodigo}
+\begin{lstlisting}[frame=single]
+Entrada: lista de ofertas aleatoriamente ordenadas de tamanio n
+Salida: oferta seleccionada por el vendedor
+
+1. r <- floor(n / 2)
+2. mejorObservada <- max(ofertas[0 .. r-1])
+3. Para i desde r hasta n - 1 hacer:
+     Si ofertas[i] > mejorObservada entonces
+         retornar ofertas[i]
+4. Retornar ofertas[n - 1]  // si ninguna supera a la mejor observada
+\end{lstlisting}
+
+\subsection{Analisis de Complejidad}
+\begin{itemize}
+    \item La operación de calcular el máximo entre las primeras $r$ ofertas tiene complejidad $O(n)$.
+    \item La segunda fase también puede recorrer hasta $n$ elementos, en el peor caso.
+    \item Por lo tanto, la complejidad total del algoritmo es \textbf{$O(n)$}.
+\end{itemize}
+
+\subsection{Seguimiento}
+\begin{itemize}
+    \item Supongamos que $n = 7$ y que las ofertas llegan en el siguiente orden aleatorio:
+    
+    \[
+    \text{Ofertas} = [30, 60, 25, 40, 85, 70, 50]
+    \]
+    
+    \item Fase de observación: $r = \lfloor 7/2 \rfloor = 3$
+    
+    \[
+    \text{Ofertas observadas: } [30, 60, 25] \Rightarrow \texttt{mejorObservada} = 60
+    \]
+    
+    \item Fase de selección:
+    \begin{itemize}
+        \item $40 < 60$ → rechazada
+        \item $85 > 60$ → \textbf{aceptada}
+    \end{itemize}
+    
+    \item Resultado: el vendedor acepta la oferta de \textbf{85}, que es la máxima del conjunto.
+\end{itemize}
+
+
+\subsection{Sets de Datos}
+
+Para evaluar experimentalmente el comportamiento del algoritmo, se generaron conjuntos de datos aleatorios utilizando una función \texttt{random.shuffle()} con semilla fija, lo cual garantiza la \textbf{reproducibilidad} de los resultados.
+
+\begin{itemize}
+    \item Para cada tamaño $n \in \{100,\ 500,\ 1000,\ 5000,\ 10000,\ 20000,\ 30000,\ 40000,\ 50000\}$ se generaron 100 sets distintos de ofertas.
+    \item Cada set es una permutación aleatoria de los enteros del 1 al $n$.
+    \item Se guardó uno de los sets de cada tamaño en el archivo \texttt{setdedatos.txt}.
+    \item El archivo \texttt{resultados.txt} contiene los resultados de todas las ejecuciones:
+    \begin{itemize}
+        \item Tamaño del set $n$
+        \item Semilla usada
+        \item Oferta seleccionada por el algoritmo
+        \item Máxima oferta del set
+        \item Si se seleccionó o no la mejor oferta
+    \end{itemize}
+\end{itemize}
+
+\subsection{Tiempos de Ejecución}
+
+Se midió el \textbf{tiempo de ejecución promedio} del algoritmo para cada valor de $n$ mencionado anteriormente, repitiendo la prueba 100 veces por tamaño y dividiendo el tiempo total por la cantidad de ejecuciones.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{probabilidad.png}
+    \caption{Izquierda: tiempo promedio de ejecución según el tamaño del set. Derecha: probabilidad de seleccionar la mejor oferta.}
+\end{figure}
+
+\begin{itemize}
+    \item El gráfico de la izquierda muestra que el tiempo de ejecución crece de forma \textbf{lineal} con respecto a $n$.
+    \item Esto coincide con la complejidad temporal esperada del algoritmo: $\mathcal{O}(n)$.
+    \item El gráfico de la derecha indica que la probabilidad de seleccionar la mejor oferta se mantiene estable y por encima de $\frac{1}{4}$.
+\end{itemize}
+
+\subsection{Resultados}
+
+Los experimentos realizados permiten concluir que:
+
+\begin{itemize}
+    \item El algoritmo cumple con la garantía solicitada: la \textbf{probabilidad de elegir la mejor oferta es siempre mayor o igual a} $\frac{1}{4}$.
+    \item En todos los valores de $n$ utilizados, la probabilidad estimada se encuentra entre $0.27$ y $0.38$, cumpliendo cómodamente el umbral requerido.
+    \item La eficiencia temporal es adecuada para conjuntos grandes: incluso para $n = 50\,000$ el tiempo promedio de ejecución es muy bajo.
+    \item La estrategia de observación y selección aplicada es efectiva sin conocer el valor máximo por adelantado, basándose sólo en comparaciones relativas.
+\end{itemize}
+
+Por lo tanto, se puede considerar que el algoritmo diseñado es correcto, eficiente y cumple con los objetivos planteados en el problema.
+
+
+
+
 \section{{\uline{\textbf{\textit{Problema 3}}}}}
 \subsection{Enunciado}
     Tenemos dos lenguajes que corresponden a la intersección (representada mediante la 
